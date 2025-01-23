@@ -287,8 +287,8 @@ class HostProcess(host.Process, ABC):
                 # Extract Docker container ID from cgroup data
                 container_id = None
                 for line in cgroup_data.splitlines():
-                    if "docker-" in line:
-                        container_id = line.split("docker-")[-1].split(".scope")[0]
+                    if "docker" in line:
+                        container_id = line.split("docker")[-1][1:9]
                         break
 
                 if container_id:
