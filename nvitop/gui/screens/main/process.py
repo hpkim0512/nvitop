@@ -389,18 +389,18 @@ class ProcessPanel(Displayable):  # pylint: disable=too-many-instance-attributes
                     attr='bold',
                 )
 
-        self.addstr(self.y + 3, self.x + 1, ' GPU     PID      USER  GPU-MEM %SM  ')
+        self.addstr(self.y + 3, self.x + 1, ' GPU     PID         CONTAINER  GPU-MEM %SM  ')
         host_offset = max(self.host_offset, 0)
         command_offset = max(14 + len(self.host_headers[-2]) - host_offset, 0)
         if command_offset > 0:
             host_headers = '  '.join(self.host_headers)
             self.addstr(
                 self.y + 3,
-                self.x + 38,
-                f'{host_headers[host_offset:].ljust(self.width - 40)}',
+                self.x + 46,
+                f'{host_headers[host_offset:].ljust(self.width - 48)}',
             )
         else:
-            self.addstr(self.y + 3, self.x + 38, '{}'.format('COMMAND'.ljust(self.width - 40)))
+            self.addstr(self.y + 3, self.x + 46, '{}'.format('COMMAND'.ljust(self.width - 48)))
 
         _, reverse, offset, column, *_ = self.ORDERS[self.order]
         column_width = len(column)
@@ -419,7 +419,7 @@ class ProcessPanel(Displayable):  # pylint: disable=too-many-instance-attributes
                     attr='bold | underline',
                 )
             elif offset <= 38 < offset + column_width:
-                self.addstr(self.y + 3, self.x + 38, (column + indicator)[39 - offset :])
+                self.addstr(self.y + 3, self.x + 46, (column + indicator)[39 - offset :])
                 if offset + column_width >= 40:
                     self.color_at(
                         self.y + 3,
@@ -479,11 +479,11 @@ class ProcessPanel(Displayable):  # pylint: disable=too-many-instance-attributes
                         cut_string(process.pid, maxlen=7, padstr='.'),
                         process.type,
                         str(
-                            WideString(cut_string(process.username, maxlen=7, padstr='+')).rjust(7),
+                            WideString(cut_string(process.username, maxlen=15, padstr='+')).rjust(15),
                         ),
                         process.gpu_memory_human,
                         process.gpu_sm_utilization_string.replace('%', ''),
-                        WideString(host_info).ljust(self.width - 39)[: self.width - 39],
+                        WideString(host_info).ljust(self.width - 47)[: self.width - 47],
                     ),
                 )
                 if self.host_offset > 0:
