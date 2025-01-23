@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import contextlib
 import datetime
 import functools
@@ -277,9 +278,32 @@ class HostProcess(host.Process, ABC):
                     If the user do not have read privilege to the process' status file.
             """
             if self._username is None:  # pylint: disable=access-member-before-definition
-                self._username = (  # pylint: disable=attribute-defined-outside-init
-                    super().username()
-                )
+                # Read the cgroup file
+                pid = super().pid
+                proc_path = f"/proc/{pid}/cgroup"
+                with open(proc_path, "r") as file:
+                    cgroup_data = file.read()
+
+                # Extract Docker container ID from cgroup data
+                container_id = None
+                for line in cgroup_data.splitlines():
+                    if "docker-" in line:
+                        container_id = line.split("docker-")[-1].split(".scope")[0]
+                        break
+
+                if container_id:
+                    # Get the container name using `docker ps`
+                    container_name = subprocess.check_output(
+                        ["docker", "ps", "--filter", f"id={container_id}", "--format", "{{.Names}}"],
+                        text=True
+                    ).strip()
+                    self._username = (  # pylint: disable=attribute-defined-outside-init
+                        container_name
+                    )
+                else:
+                    self._username = (  # pylint: disable=attribute-defined-outside-init
+                        super().username()
+                    )
             return self._username
 
     @memoize_when_activated
